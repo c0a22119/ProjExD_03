@@ -180,9 +180,9 @@ class Explosion:
             self.life -= 1
 
 
-class Score:
+class Score:#スコアの表示
     def __init__(self):
-        self.font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)#フォントとフォントサイズの設定
         self.color = (0, 0, 255)
         self.value = 0
         self.img = self.font.render(f"Score: {self.value}", 0, self.color)
