@@ -140,6 +140,28 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    def __init__(self, center):
+        img = pg.image.load("ex03/fig/explosion.gif")
+        self.images = [img,
+                       pg.transform.flip(img, True, False),
+                       pg.transform.flip(img, False, True),
+                       pg.transform.flip(img, True, True)]
+        self.current_image = 0
+        self.image = self.images[self.current_image]
+        self.rect = self.image.get_rect()
+        self.rect.center = center
+        self.life = len(self.images) * 10  # 画像リストの長さ x 10フレーム
+
+    def update(self, screen: pg.Surface):
+        if self.life > 0:
+            # 画像を交互に切り替える
+            if self.life % 10 == 0:
+                self.current_image = (self.current_image + 1) % len(self.images)
+                self.image = self.images[self.current_image]
+            screen.blit(self.image, self.rect)
+            self.life -= 1
+
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -148,6 +170,7 @@ def main():
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
     beam = None
+    explosions = []
 
     clock = pg.time.Clock()
     tmr = 0
@@ -172,12 +195,17 @@ def main():
         for i, bomb in enumerate(bombs):
             if beam is not None:
                 if beam.rct.colliderect(bomb.rct):  # ビームと爆弾の衝突判定
+                    explosions.append(Explosion(bomb.rct.center))
                     # 撃墜＝Noneにする
                     beam = None
                     bombs[i] = None
                     bird.change_img(6, screen)
                     pg.display.update()
-        bombs = [bomb for bomb in bombs if bomb is not None]                        
+        bombs = [bomb for bomb in bombs if bomb is not None]    
+        for explosion in explosions:
+            explosion.update(screen)
+        explosions = [explosion for explosion in explosions if explosion.life > 0]
+
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
