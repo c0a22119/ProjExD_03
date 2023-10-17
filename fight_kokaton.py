@@ -1,7 +1,7 @@
 import random
 import sys
 import time
-
+import math
 import pygame as pg
 
 
@@ -56,6 +56,7 @@ class Bird:
         self.img = self.imgs[(+5, 0)]
         self.rct = self.img.get_rect()
         self.rct.center = xy
+        self.dire = (+5, 0)
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -83,6 +84,9 @@ class Bird:
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = self.imgs[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
+        if not (sum_mv[0] == 0 and sum_mv[1] == 0):
+            self.img = self.imgs[tuple(sum_mv)]
+            self.dire = tuple(sum_mv)  # 方向を更新
 
 
 class Beam:
@@ -96,6 +100,18 @@ class Beam:
         self.rct.left = bird.rct.right  # こうかとんの右横座標
         self.rct.centery = bird.rct.centery  # こうかとんの中心縦座標
         self.vx, self.vy = +5, 0
+
+        # こうかとんの方向からビームの方向を取得
+        vx, vy = bird.dire
+        # 画像の回転
+        angle_rad = math.atan2(vy, vx)
+        angle_deg = math.degrees(angle_rad)
+        self.img = pg.transform.rotate(self.img, -angle_deg)
+        
+        # 初期位置の調整
+        self.rct.centerx = bird.rct.centerx + bird.rct.width * vx / 5
+        self.rct.centery = bird.rct.centery + bird.rct.height * vy / 5
+        self.vx, self.vy = vx, vy
 
     def update(self, screen: pg.Surface):
         """
