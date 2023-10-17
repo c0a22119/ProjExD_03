@@ -156,9 +156,10 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+
 class Explosion:
     def __init__(self, center):
-        img = pg.image.load("ex03/fig/explosion.gif")
+        img = pg.image.load("ex03/fig/explosion.gif")#爆発画像
         self.images = [img,
                        pg.transform.flip(img, True, False),
                        pg.transform.flip(img, False, True),
@@ -167,7 +168,7 @@ class Explosion:
         self.image = self.images[self.current_image]
         self.rect = self.image.get_rect()
         self.rect.center = center
-        self.life = len(self.images) * 10  # 画像リストの長さ x 10フレーム
+        self.life = len(self.images) * 10  # 画像リストの長さ x 10フレーム表示
 
     def update(self, screen: pg.Surface):
         if self.life > 0:
@@ -179,6 +180,20 @@ class Explosion:
             self.life -= 1
 
 
+class Score:
+    def __init__(self):
+        self.font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.color = (0, 0, 255)
+        self.value = 0
+        self.img = self.font.render(f"Score: {self.value}", 0, self.color)
+        self.rect = self.img.get_rect()
+        self.rect.topleft = (100, HEIGHT - 50)
+
+    def update(self, screen):
+        self.img = self.font.render(f"Score: {self.value}", 0, self.color)
+        screen.blit(self.img, self.rect)
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -187,6 +202,7 @@ def main():
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
     beam = None
     explosions = []
+    score = Score()
 
     clock = pg.time.Clock()
     tmr = 0
@@ -217,7 +233,9 @@ def main():
                     bombs[i] = None
                     bird.change_img(6, screen)
                     pg.display.update()
-        bombs = [bomb for bomb in bombs if bomb is not None]    
+                    score.value += 1  # 爆弾を打ち落としたらスコアアップ
+        bombs = [bomb for bomb in bombs if bomb is not None]
+           
         for explosion in explosions:
             explosion.update(screen)
         explosions = [explosion for explosion in explosions if explosion.life > 0]
@@ -229,6 +247,7 @@ def main():
             bomb.update(screen)
         if beam is not None:
             beam.update(screen)
+        score.update(screen)  # スコアを更新
         pg.display.update()
         tmr += 1
         clock.tick(50)
