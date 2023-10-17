@@ -201,6 +201,7 @@ def main():
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
     beam = None
+    beams = []  # 1. Beamクラスのインスタンスを複数扱うための空のリストを作る
     explosions = []
     score = Score()
 
@@ -213,6 +214,9 @@ def main():
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # キーが押されたら，かつ，キーの種類がスペースキーだったら
                 beam = Beam(bird)
+            if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+                # キーが押されたら，かつ，キーの種類がスペースキーだったら
+                beams.append(Beam(bird))  # 2. ビームを`beams`リストに追加
 
         
         screen.blit(bg_img, [0, 0])
@@ -240,7 +244,20 @@ def main():
             explosion.update(screen)
         explosions = [explosion for explosion in explosions if explosion.life > 0]
 
-
+        for beam in beams:
+            for i, bomb in enumerate(bombs):
+                if beam.rct.colliderect(bomb.rct):  # ビームと爆弾の衝突判定
+                    explosions.append(Explosion(bomb.rct.center))
+                    bombs[i] = None
+                    bird.change_img(6, screen)
+                    pg.display.update()
+                    score.value += 1  # 爆弾を打ち落としたらスコアアップ
+                    beams.remove(beam)  # 2. 爆弾と衝突したらリストからビームを削除
+            if not check_bound(beam.rct)[0] or not check_bound(beam.rct)[1]:
+                beams.remove(beam)
+        for beam in beams:
+            beam.update(screen)
+              
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         for bomb in bombs:
